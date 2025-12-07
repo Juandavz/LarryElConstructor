@@ -3,107 +3,87 @@ package ui;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Color;
+import java.awt.Image;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList; 
-import java.util.Random; 
 import javax.swing.ImageIcon;
 
-import data.Square;
-import data.Food;
-import data.Obstacle;
-import logic.SquareLogic;
-import logic.FoodLogic;
+import logic.GameLogic;
+import data.Wall;
+// Importamos Item para poder usarlo al pintar
+import data.Item; 
 
 public class GamePanel extends JPanel {
 
-    private Square square;
-    private SquareLogic logic;
-    private ArrayList<Obstacle> obstaculosList = new ArrayList<>(); 
-
-    private Food food;
-    private FoodLogic foodLogic;
-    
+    private GameLogic game; 
     private Image background;
-    private Random random = new Random();
+    private boolean isGameOver = false;
 
     public GamePanel() {
         setFocusable(true);
-
         background = new ImageIcon("Borde.png").getImage();
-
-        square = new Square(200, 200, 20);
-        logic = new SquareLogic(square);
-
-        food = new Food(0, 0, 20);
-        foodLogic = new FoodLogic(food);
         
-        foodLogic.randomizePosition(500, 400); 
+        game = new GameLogic(800, 600);
 
-        // GAME LOOP
-        Timer timer = new Timer(16, e -> {
-            logic.updatePosition();
-            logic.handleBorderCollision(getWidth(), getHeight());
-
-            // --- Lógica de Colisión (AQUÍ ESTÁ LA MAGIA) ---
-            if (foodLogic.checkCollision(square.getX(), square.getY(), square.getSize())) {
-                
-                // 1. Crear un NUEVO obstáculo en la posición exacta de la comida actual
-                int obsX = food.getX();
-                int obsY = food.getY();
-                int obsSize = food.getSize();
-                Obstacle nuevoObstaculo = new Obstacle(obsX, obsY, obsSize);
-                
-                // 2. Añadirlo a la lista (para que permanezca)
-                obstaculosList.add(nuevoObstaculo);
-                
-                // 3. Mover la comida a una NUEVA posición aleatoria
-                foodLogic.randomizePosition(getWidth(), getHeight());
-
-                // 4. 🌟 Aumentar la velocidad del cuadrado 🌟
-                logic.increaseSpeed(0.02); 
-            }
-
-            repaint();
-        });
-
-        timer.start();
-
-        // TECLAS
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_UP    -> logic.moveUp();
-                    case KeyEvent.VK_DOWN  -> logic.moveDown();
-                    case KeyEvent.VK_LEFT  -> logic.moveLeft();
-                    case KeyEvent.VK_RIGHT -> logic.moveRight();
+                    case KeyEvent.VK_UP    -> game.getLarry().setDirectionUp();
+                    case KeyEvent.VK_DOWN  -> game.getLarry().setDirectionDown();
+                    case KeyEvent.VK_LEFT  -> game.getLarry().setDirectionLeft();
+                    case KeyEvent.VK_RIGHT -> game.getLarry().setDirectionRight();
                 }
             }
         });
+
+        Timer timer = new Timer(16, e -> {
+            if (!isGameOver) {
+                game.updateGame(getWidth(), getHeight());
+                if (game.checkGameOver()) {
+                    isGameOver = true;
+                    System.out.println("GAME OVER");
+                }
+            }
+            repaint();
+        });
+        timer.start();
     }
     
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // FONDO
+        // 1. Fondo
         g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
 
-        // COMIDA (verde)
-        g.setColor(Color.GREEN);
-        g.fillRect(food.getX(), food.getY(), food.getSize(), food.getSize());
-
-        // CUADRADO (rojo)
-        g.setColor(Color.RED);
-        g.fillRect(square.getX(), square.getY(), square.getSize(), square.getSize());
+        // 2. DIBUJAR ÍTEM (Corrección del error 'target')
+        // Obtenemos el ítem actual (sea Dinamita o Ladrillo)
+        Item item = game.getCurrentItem(); 
         
-        // DIBUJAR TODOS LOS OBSTÁCULOS ALMACENADOS (negro)
-        g.setColor(Color.BLACK); 
-        for (Obstacle obs : obstaculosList) {
-            g.fillRect(obs.getX(), obs.getY(), obs.getSize(), obs.getSize());
+        // Usamos el color que el propio ítem define (Polimorfismo: Verde o Naranja)
+        g.setColor(item.getColor()); 
+        g.fillRect(item.getX(), item.getY(), item.getSize(), item.getSize());
+
+        // 3. Larry
+        g.setColor(Color.RED);
+        g.fillRect(game.getLarry().getX(), game.getLarry().getY(), 
+                   game.getLarry().getSize(), game.getLarry().getSize());
+        
+        // 4. Muros
+        g.setColor(Color.DARK_GRAY); 
+        for (Wall wall : game.getWalls()) {
+            g.fillRect(wall.getX(), wall.getY(), wall.getSize(), wall.getSize());
+        }
+
+        // 5. Puntaje
+        g.setColor(Color.WHITE);
+        g.drawString("Puntaje: " + game.getScore(), 20, 20);
+        
+        if(isGameOver) {
+            g.setColor(Color.RED);
+            g.drawString("GAME OVER", getWidth()/2 - 30, getHeight()/2);
         }
     }
 }
