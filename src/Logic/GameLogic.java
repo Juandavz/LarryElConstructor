@@ -1,82 +1,132 @@
 package logic;
 
-import data.*; // Importa Larry, Wall, Item, TargetBrick, Dynamite
+import data.*;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class GameLogic {
 
     private Larry larry;
-    private Item currentItem; // El ítem actual (Ladrillo o Dinamita)
+    private Item currentItem;
     private ArrayList<Wall> walls;
     private Random random = new Random();
     private int score = 0;
+    
+    // Control de tiempo para movimiento "Snake"
+    private int tickCounter = 0;
+
+    // Constantes
+    private final int TILE_SIZE = 20;
+    private final int MARGIN_LEFT = 100;
+    private final int MARGIN_RIGHT = 100;
+    private final int MARGIN_TOP = 100;
+    private final int MARGIN_BOTTOM = 100;
 
     public GameLogic(int width, int height) {
-        larry = new Larry(200, 200, 20);
+        int startX = snapToGrid(width / 2);
+        int startY = snapToGrid(height / 2);
+        
+        larry = new Larry(startX, startY, TILE_SIZE);
         walls = new ArrayList<>();
         spawnNewItem(width, height);
     }
 
     public void updateGame(int width, int height) {
-        larry.move();
-        handleBorderCollision(width, height);
+        // --- 1. LÓGICA DE MOVIMIENTO DISCRETO (TIPO SNAKE) ---
+        tickCounter++;
+        if (tickCounter >= larry.getMoveDelay()) {
+            larry.moveGrid(); // Mueve una casilla completa
+            tickCounter = 0;  // Reinicia contador
+        }
+        
+        // Actualizar muros (secado)
+        for (Wall w : walls) w.update();
 
-        // LÓGICA DE COLISIÓN
+        // --- 2. COLISIÓN CON ÍTEM ---
         if (larry.getBounds().intersects(currentItem.getBounds())) {
             
             if (currentItem instanceof TargetBrick) {
-                // Si es Ladrillo: Construir muro y subir dificultad
                 walls.add(new Wall(currentItem.getX(), currentItem.getY(), currentItem.getSize()));
-                larry.increaseSpeed(0.2); 
+                larry.increaseSpeed(); // Hace que el delay sea menor (más rápido)
                 score++;
             } 
             else if (currentItem instanceof Dynamite) {
-                // Si es Dinamita: Romper muros
-                destroyRandomWalls(3);
+                calculateExplosion();
             }
 
             spawnNewItem(width, height);
         }
     }
 
-    private void spawnNewItem(int w, int h) {
-        int type = random.nextInt(10); 
-        int margin = 50;
-        int x = margin + random.nextInt(w - margin*2);
-        int y = margin + random.nextInt(h - margin*2);
+    // Lógica de Explosión con porcentajes exactos
+    private void calculateExplosion() {
+        if (walls.isEmpty()) return;
 
-        if (type < 8) { 
-            currentItem = new TargetBrick(x, y, 20);
-        } else { 
-            currentItem = new Dynamite(x, y, 20);
-        }
+        int rand = random.nextInt(100); // 0 a 99
+        int wallsDestruir;
+
+        if (rand < 30)       wallsDestruir = 2; // 0-29 (30%)
+        else if (rand < 60)  wallsDestruir = 3; // 30-59 (30%)
+        else if (rand < 85)  wallsDestruir = 4; // 60-84 (25%)
+        else                 wallsDestruir = 5; // 85-99 (15%)
+
+        destroyRandomWalls(wallsDestruir);
     }
 
     private void destroyRandomWalls(int amount) {
-        if (walls.isEmpty()) return;
         for (int i = 0; i < amount; i++) {
             if (walls.isEmpty()) break;
             walls.remove(random.nextInt(walls.size()));
         }
     }
 
-    private void handleBorderCollision(int w, int h) {
-       if (larry.getX() < 0 || larry.getX() > w - larry.getSize() ||
-           larry.getY() < 0 || larry.getY() > h - larry.getSize()) {
-           larry.setX(w/2); larry.setY(h/2);
-       }
+    private void spawnNewItem(int w, int h) {
+        // Calcular posición en cuadrícula
+        int playableWidth = w - MARGIN_LEFT - MARGIN_RIGHT;
+        int playableHeight = h - MARGIN_TOP - MARGIN_BOTTOM;
+        int cols = playableWidth / TILE_SIZE;
+        int rows = playableHeight / TILE_SIZE;
+
+        int x = MARGIN_LEFT + (random.nextInt(cols) * TILE_SIZE);
+        int y = MARGIN_TOP + (random.nextInt(rows) * TILE_SIZE);
+
+        // --- LÓGICA DE APARICIÓN (PROBABILIDAD 1/5) ---
+        // Condición: Mínimo 10 muros Y el dado cae en 0 (1 entre 5 posibilidades: 0,1,2,3,4)
+        if (walls.size() >= 10 && random.nextInt(5) == 0) {
+            currentItem = new Dynamite(x, y, TILE_SIZE);
+        } else {
+            currentItem = new TargetBrick(x, y, TILE_SIZE);
+        }
     }
 
-    public boolean checkGameOver() {
-       for (Wall w : walls) {
-           if (larry.getBounds().intersects(w.getBounds())) return true;
-       }
-       return false;
+    // Verifica Game Over (Bordes o Muros Sólidos)
+    public boolean checkGameOver(int w, int h) {
+        // 1. Colisión con Bordes (Ahora mata)
+        if (larry.getX() < MARGIN_LEFT || 
+            larry.getX() > w - MARGIN_RIGHT - TILE_SIZE ||
+            larry.getY() < MARGIN_TOP || 
+            larry.getY() > h - MARGIN_BOTTOM - TILE_SIZE) {
+            return true;
+        }
+
+        // 2. Colisión con Muros Sólidos
+        for (Wall wall : walls) {
+            if (wall.isSolid() && larry.getBounds().intersects(wall.getBounds())) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    // GETTERS (Aquí está el que te faltaba)
-    public Item getCurrentItem() { return currentItem; } // <--- ¡AQUÍ ESTÁ!
+    private int snapToGrid(int value) {
+        return (value / TILE_SIZE) * TILE_SIZE;
+    }
+
+    // Getters
+    public int getTileSize() { return TILE_SIZE; }
+    public int getMarginLeft() { return MARGIN_LEFT; }
+    public int getMarginTop() { return MARGIN_TOP; }
+    public Item getCurrentItem() { return currentItem; }
     public Larry getLarry() { return larry; }
     public ArrayList<Wall> getWalls() { return walls; }
     public int getScore() { return score; }

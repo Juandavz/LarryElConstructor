@@ -3,12 +3,12 @@ package data;
 public class Larry extends GameCharacter {
 
     public Larry(int x, int y, int size) {
-        super(x, y, size, 2.0); // Velocidad inicial 2.0
+        // 10 es el delay inicial (se moverá cada 10 frames, aprox 6 veces por segundo)
+        super(x, y, size, 10); 
     }
 
     @Override
     public void updateBehavior() {
-        // Aquí podrías poner animaciones específicas de Larry en el futuro
-        // O lógica exclusiva de él (como invulnerabilidad temporal)
+        // Lógica futura
     }
 }

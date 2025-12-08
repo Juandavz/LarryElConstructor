@@ -2,18 +2,22 @@ package data;
 
 public abstract class GameCharacter extends GameObject {
     
-    protected double speed;
+    // dx y dy ahora representan dirección (-1, 0, 1), no velocidad en píxeles
     protected int dx, dy;
+    
+    // speed ahora representará "cuántos frames espera antes de moverse" (Delay)
+    // Menor número = Más rápido
+    protected int moveDelay; 
 
-    public GameCharacter(int x, int y, int size, double speed) {
+    public GameCharacter(int x, int y, int size, int initialDelay) {
         super(x, y, size);
-        this.speed = speed;
+        this.moveDelay = initialDelay;
     }
 
-    // Lógica compartida: Tanto Larry como los enemigos se mueven igual
-    public void move() {
-        this.x += dx;
-        this.y += dy;
+    // Este método mueve al personaje UN bloque completo en la dirección actual
+    public void moveGrid() {
+        this.x += dx * size;
+        this.y += dy * size;
     }
 
     public void stop() {
@@ -21,20 +25,21 @@ public abstract class GameCharacter extends GameObject {
         dy = 0;
     }
 
-    // Métodos abstractos: Obligamos a que Larry y Enemigo definan cómo se comportan
-    // Por ejemplo, Larry se mueve con teclas, el Enemigo con IA.
     public abstract void updateBehavior(); 
 
-    // Setters de dirección para usar desde el teclado o IA
-    public void setDirectionUp()    { dx = 0; dy = (int)-speed; }
-    public void setDirectionDown()  { dx = 0; dy = (int)speed; }
-    public void setDirectionLeft()  { dx = (int)-speed; dy = 0; }
-    public void setDirectionRight() { dx = (int)speed; dy = 0; }
+    // Setters de dirección (Solo cambian la orientación, no mueven)
+    // Evitamos girar 180 grados sobre sí mismo (ej: si va a la derecha, no puede ir a la izquierda)
+    public void setDirectionUp()    { if(dy != 1) { dx = 0; dy = -1; } }
+    public void setDirectionDown()  { if(dy != -1) { dx = 0; dy = 1; } }
+    public void setDirectionLeft()  { if(dx != 1) { dx = -1; dy = 0; } }
+    public void setDirectionRight() { if(dx != -1) { dx = 1; dy = 0; } }
 
-    public void increaseSpeed(double increment) {
-        this.speed += increment;
-        // Actualizar vector actual si se está moviendo
-        if (dx != 0) dx = (dx > 0) ? (int)speed : (int)-speed;
-        if (dy != 0) dy = (dy > 0) ? (int)speed : (int)-speed;
+    // Aumentar velocidad ahora significa reducir el tiempo de espera
+    public void increaseSpeed() {
+        if (moveDelay > 5) { // Límite para que no sea injugable
+            moveDelay--; 
+        }
     }
+    
+    public int getMoveDelay() { return moveDelay; }
 }
