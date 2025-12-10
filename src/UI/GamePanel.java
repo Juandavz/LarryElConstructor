@@ -13,9 +13,14 @@ import javax.swing.ImageIcon;
 import Logic.GameLogic;
 import Data.Wall;
 import Data.Item; 
+import Logic.SoundPlayer;
 import java.io.File;
 
 public class GamePanel extends JPanel {
+    
+    // musica
+    private SoundPlayer soundPlayer = new SoundPlayer();
+
 
     // Estados del juego
     private enum State { MENU, PLAYING, GAME_OVER }
@@ -36,6 +41,7 @@ public class GamePanel extends JPanel {
     private boolean isMode2Players = false;
 
     public GamePanel() {
+        enterMenu();
         // Cargar fuente Press Start 2P
         try {
             pressStartFont = Font.createFont(
@@ -66,8 +72,10 @@ public class GamePanel extends JPanel {
                 // --- 1. CONTROLES DEL MENÚ ---
                 if (currentState == State.MENU) {
                     if (key == KeyEvent.VK_1) {
+                        soundPlayer.stop(); //detener musica
                         startGame(false); // 1 Jugador
                     } else if (key == KeyEvent.VK_2) {
+                        soundPlayer.stop(); //detener musica
                         startGame(true);  // 2 Jugadores
                     }
                 }
@@ -94,6 +102,7 @@ public class GamePanel extends JPanel {
                     if (key == KeyEvent.VK_R) {
                         startGame(isMode2Players); // Reinicia mismo modo
                     } else if (key == KeyEvent.VK_M) {
+                        enterMenu();
                         currentState = State.MENU; // Vuelve al menú
                         repaint();
                     }
@@ -198,6 +207,7 @@ public class GamePanel extends JPanel {
 
     private void drawMenuScreen(Graphics g) {
         
+        
         // Fondo del menú
         g.drawImage(Fondo, 0, 0, getWidth(), getHeight(), this);
         
@@ -235,8 +245,10 @@ public class GamePanel extends JPanel {
         g.setColor(new Color(0, 0, 0, 180)); 
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        Font titleFont = new Font("Arial", Font.BOLD, 50);
-        Font subFont = new Font("Arial", Font.BOLD, 20);
+        Font titleFont = pressStartFont.deriveFont(50f);
+        g.setFont(titleFont);
+        Color strongRed = new Color(102, 11, 25);
+        Font subFont = pressStartFont.deriveFont(18f);
         
         String title;
         Color titleColor = Color.WHITE;
@@ -253,6 +265,8 @@ public class GamePanel extends JPanel {
         }
 
         g.setFont(titleFont);
+        g.setColor(strongRed);
+        centerText(g, title, getHeight() / 2 - 16);
         g.setColor(titleColor);
         centerText(g, title, getHeight() / 2 - 20);
         
@@ -262,6 +276,12 @@ public class GamePanel extends JPanel {
         g.setColor(Color.YELLOW);
         centerText(g, "Presiona 'M' para ir al Menú", getHeight() / 2 + 60);
     }
+    private void enterMenu() {
+        currentState = State.MENU;
+        soundPlayer.stop(); // Detiene musica
+        soundPlayer.playLoop("/Sonidos/musicaMenu.wav");
+    }
+    
 
     private void centerText(Graphics g, String text, int y) {
         FontMetrics metrics = g.getFontMetrics();

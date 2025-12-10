@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class GameLogic {
+    private SoundPlayer soundPlayer; //Musica
+
 
     private Larry player1;
     private Larry player2; // Puede ser null si es 1 jugador
@@ -29,9 +31,14 @@ public class GameLogic {
     private final int MARGIN_RIGHT = 100;
     private final int MARGIN_TOP = 100;
     private final int MARGIN_BOTTOM = 100;
+    
 
     // Constructor que recibe el modo de juego
     public GameLogic(int width, int height, boolean twoPlayers) {
+        
+        //musica para la pantalla de juego 
+        soundPlayer = new SoundPlayer();
+        soundPlayer.playLoop("/Sonidos/Juego.wav");
         this.isMultiplayer = twoPlayers;
         int startY = snapToGrid(height / 2);
         
@@ -102,6 +109,8 @@ public class GameLogic {
         if (!isMultiplayer) {
             // Lógica para 1 Jugador (Solo importa si P1 muere)
             if (p1Dead) {
+                soundPlayer.stop(); //detener musica
+                soundPlayer.playOnce("/Sonidos/gameOver.wav");//sonido de muerte
                 winner = 3; // Código de derrota estándar
                 return true;
             }
@@ -112,17 +121,25 @@ public class GameLogic {
 
             // Choque de cabezas
             if (player1.getX() == player2.getX() && player1.getY() == player2.getY()) {
+                soundPlayer.stop();
+                soundPlayer.playOnce("/Sonidos/gameOver.wav");
                 winner = 3; // Empate
                 return true;
             }
 
             if (p1Dead && p2Dead) {
+                soundPlayer.stop();
+                soundPlayer.playOnce("/Sonidos/gameOver.wav");
                 winner = 3; // Empate
                 return true;
             } else if (p1Dead) {
+                soundPlayer.stop();
+                soundPlayer.playOnce("/Sonidos/gameOver.wav");
                 winner = 2; // Gana Azul
                 return true;
             } else if (p2Dead) {
+                soundPlayer.stop();
+                soundPlayer.playOnce("/Sonidos/gameOver.wav");
                 winner = 1; // Gana Rojo
                 return true;
             }
@@ -146,6 +163,7 @@ public class GameLogic {
         }
         return false;
     }
+    
 
     private void spawnNewItem(int w, int h) {
         int playableW = w - MARGIN_LEFT - MARGIN_RIGHT;
