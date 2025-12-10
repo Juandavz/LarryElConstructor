@@ -1,4 +1,4 @@
-package data;
+package Data;
 
 public abstract class GameCharacter extends GameObject {
     

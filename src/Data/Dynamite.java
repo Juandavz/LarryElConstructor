@@ -1,4 +1,4 @@
-package data;
+package Data;
 import java.awt.Color;
 
 public class Dynamite extends Item {

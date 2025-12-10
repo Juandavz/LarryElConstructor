@@ -1,6 +1,6 @@
-package logic;
+package Logic;
 
-import data.*;
+import Data.*;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Random;

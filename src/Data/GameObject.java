@@ -1,4 +1,4 @@
-package data;
+package Data;
 
 import java.awt.Rectangle; // <--- IMPORTANTE: Necesario para getBounds
 

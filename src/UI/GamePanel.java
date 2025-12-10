@@ -1,4 +1,4 @@
-package ui;
+package UI;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -10,9 +10,10 @@ import java.awt.FontMetrics;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.ImageIcon;
-import logic.GameLogic;
-import data.Wall;
-import data.Item; 
+import Logic.GameLogic;
+import Data.Wall;
+import Data.Item; 
+import java.io.File;
 
 public class GamePanel extends JPanel {
 
@@ -23,12 +24,36 @@ public class GamePanel extends JPanel {
     private GameLogic game; 
     private Image background;
     
+    // Imágenes del menú
+    private Image imgP1;
+    private Image imgP2;
+    private Image Fondo;
+    
+    //fuente de juegos
+    private Font pressStartFont;
+    
     // Configuración elegida en el menú
     private boolean isMode2Players = false;
 
     public GamePanel() {
+        // Cargar fuente Press Start 2P
+        try {
+            pressStartFont = Font.createFont(
+                    Font.TRUETYPE_FONT,
+                    new File("fonts/PressStart2P.ttf")   // Ruta del .ttf
+            ).deriveFont(32f); // tamaño
+        } catch (Exception e) {
+            System.out.println("Error cargando fuente. Usando fallback.");
+            pressStartFont = new Font("Monospaced", Font.BOLD, 32);
+        }
         this.setFocusable(true);
         this.requestFocusInWindow();
+        
+        // Cargar imágenes del menú
+        Fondo = new ImageIcon("Fondo.png").getImage();
+        imgP1 = new ImageIcon("P1.png").getImage();
+        imgP2 = new ImageIcon("P2.png").getImage();
+        
         
         background = new ImageIcon("Borde.png").getImage();
         // Inicialmente game es null hasta que se elija modo
@@ -147,20 +172,22 @@ public class GamePanel extends JPanel {
         if (game.getPlayer1() != null) {
             g.setColor(game.getPlayer1().getColor());
             g.fillRect(game.getPlayer1().getX(), game.getPlayer1().getY(), 
-                       game.getPlayer1().getSize(), game.getPlayer1().getSize());
+            game.getPlayer1().getSize(), game.getPlayer1().getSize());
+
         }
         
         if (isMode2Players && game.getPlayer2() != null) {
-            g.setColor(game.getPlayer2().getColor());
+            g.setColor(game.getPlayer2().getColor()); 
             g.fillRect(game.getPlayer2().getX(), game.getPlayer2().getY(), 
-                       game.getPlayer2().getSize(), game.getPlayer2().getSize());
+                    game.getPlayer2().getSize(), game.getPlayer2().getSize());
         }
 
         // 6. HUD
+        g.setFont(pressStartFont.deriveFont(18f)); 
         g.setColor(Color.BLACK);
-        String hud = isMode2Players ? "Rojo vs Azul" : "Puntaje: " + game.getScore();
+        String hud = isMode2Players ? "Rojo vs amarillo" : "Puntaje: " + game.getScore();
         g.drawString(hud, 112, 122); 
-        g.setColor(Color.WHITE);
+        g.setColor(Color.GRAY);
         g.drawString(hud, 110, 120);
 
         // --- PANTALLA GAME OVER ---
@@ -170,21 +197,34 @@ public class GamePanel extends JPanel {
     }
 
     private void drawMenuScreen(Graphics g) {
+        
         // Fondo del menú
-        g.setColor(new Color(30, 30, 30));
-        g.fillRect(0, 0, getWidth(), getHeight());
+        g.drawImage(Fondo, 0, 0, getWidth(), getHeight(), this);
+        
+        // --- IMÁGENES P1 Y P2 ---
+        int imgWidth = 180;
+        int imgHeight = 180;
+
+        int p1X = (int)(getWidth() * 0.20) - imgWidth / 2;
+        int pY = getHeight() / 2 - imgHeight;
+        g.drawImage(imgP1, p1X, pY, imgWidth, imgHeight, this);
+
+        int p2X = (int)(getWidth() * 0.80) - imgWidth / 2;
+        g.drawImage(imgP2, p2X, pY, imgWidth, imgHeight, this);
+        
+        
 
         Font titleFont = new Font("Arial", Font.BOLD, 40);
         Font optionFont = new Font("Arial", Font.PLAIN, 25);
 
         g.setColor(Color.ORANGE);
-        g.setFont(titleFont);
-        centerText(g, "LARRY EL CONSTRUCTOR", getHeight() / 3);
+        g.setFont(pressStartFont);
+        centerText(g, "LARRY EL CONSTRUCTOR", getHeight() / 4);
 
         g.setColor(Color.WHITE);
-        g.setFont(optionFont);
-        centerText(g, "Presiona '1' para Un Jugador", getHeight() / 2);
-        centerText(g, "Presiona '2' para Dos Jugadores (Versus)", getHeight() / 2 + 40);
+        g.setFont(pressStartFont.deriveFont(18f));
+        centerText(g, "Presiona '1' para Un Jugador", getHeight() / 2+50);
+        centerText(g, "Presiona '2' para Dos Jugadores (Versus)", getHeight() / 2 + 90);
         
         g.setColor(Color.GRAY);
         g.setFont(new Font("Arial", Font.ITALIC, 15));

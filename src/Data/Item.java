@@ -1,4 +1,4 @@
-package data;
+package Data;
 import java.awt.Color;
 
 public abstract class Item extends GameObject {
