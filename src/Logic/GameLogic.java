@@ -93,6 +93,7 @@ public class GameLogic {
         if (player.getBounds().intersects(currentItem.getBounds())) {
             
             if (currentItem instanceof TargetBrick) {
+                soundPlayer.playOnce("/Sonidos/Coger.wav");
                 walls.add(new Wall(currentItem.getX(), currentItem.getY(), currentItem.getSize()));
                 player.increaseSpeed(); 
             } 
