@@ -1,14 +1,23 @@
 package data;
 
-public class Larry extends GameCharacter {
+import java.awt.Color;
 
-    public Larry(int x, int y, int size) {
-        // 10 es el delay inicial (se moverá cada 10 frames, aprox 6 veces por segundo)
+public class Larry extends GameCharacter {
+    
+    private Color color; // Nuevo atributo de identidad
+
+    public Larry(int x, int y, int size, Color color) {
+        // 10 es el delay inicial (velocidad base)
         super(x, y, size, 10); 
+        this.color = color;
+    }
+
+    public Color getColor() {
+        return color;
     }
 
     @Override
     public void updateBehavior() {
-        // Lógica futura
+        // Lógica futura si es necesaria
     }
 }
