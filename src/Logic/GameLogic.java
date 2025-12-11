@@ -106,6 +106,7 @@ public class GameLogic {
                 pointsToAdd = 10;
             } 
             else if (currentItem instanceof Dynamite) {
+                soundPlayer.playOnce("/Sonidos/Explosion.wav"); // <-- sonido de explosión
                 calculateExplosion();
                 pointsToAdd = 5;
             }

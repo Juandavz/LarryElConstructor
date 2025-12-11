@@ -356,7 +356,7 @@ public class GamePanel extends JPanel {
         
         g.setColor(Color.ORANGE);
         g.setFont(pressStartFont.deriveFont(40f));
-        centerText(g, "LARRY EL CONSTRUCTOR", getHeight() / 4);
+        centerText(g, "Block City", getHeight() / 4);
 
         g.setColor(Color.WHITE);
         g.setFont(pressStartFont.deriveFont(18f));
