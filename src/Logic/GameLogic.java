@@ -8,8 +8,8 @@ import java.util.Random;
 public class GameLogic {
     protected SoundPlayer soundPlayer;
 
-    protected Larry player1;
-    protected Larry player2; 
+    protected Player player1;
+    protected Player player2; 
     protected boolean isMultiplayer; 
     
     // --- ESTADO DE JUGADORES ---
@@ -47,11 +47,11 @@ public class GameLogic {
         
         // Posición inicial P1
         int startX1 = twoPlayers ? snapToGrid(MARGIN_LEFT + TILE_SIZE * 2) : snapToGrid(width / 2);
-        player1 = new Larry(startX1, startY, TILE_SIZE, Color.RED);
+        player1 = new Player(startX1, startY, TILE_SIZE, Color.RED);
         
         if (isMultiplayer) {
             // El Jugador 2 (Azul) empieza a la derecha mirando a la izquierda
-            player2 = new Larry(snapToGrid(width - MARGIN_RIGHT - TILE_SIZE * 3), startY, TILE_SIZE, Color.BLUE);
+            player2 = new Player(snapToGrid(width - MARGIN_RIGHT - TILE_SIZE * 3), startY, TILE_SIZE, Color.BLUE);
             player2.setDirectionLeft();
             
             // CORRECCIÓN: El Jugador 1 (Rojo) empieza mirando a la derecha automáticamente
@@ -93,7 +93,7 @@ public class GameLogic {
         if (isMultiplayer && p2Active) checkItemCollision(player2, width, height);
     }
 
-    protected void checkItemCollision(Larry player, int w, int h) {
+    protected void checkItemCollision(Player player, int w, int h) {
         if (player == null || currentItem == null) return;
 
         if (player.getBounds().intersects(currentItem.getBounds())) {
@@ -161,7 +161,7 @@ public class GameLogic {
         if(soundPlayer != null) soundPlayer.stop();
     }
 
-    protected boolean checkPlayerDead(Larry p, int w, int h) {
+    protected boolean checkPlayerDead(Player p, int w, int h) {
         if (p == null) return false;
         
         if (p.getX() < MARGIN_LEFT || p.getX() > w - MARGIN_RIGHT - TILE_SIZE ||
@@ -228,8 +228,8 @@ public class GameLogic {
     public Item getCurrentItem() { return currentItem; }
     public ArrayList<Wall> getWalls() { return walls; }
     
-    public Larry getPlayer1() { return player1; }
-    public Larry getPlayer2() { return player2; }
+    public Player getPlayer1() { return player1; }
+    public Player getPlayer2() { return player2; }
     public boolean isP1Active() { return p1Active; } 
     public boolean isP2Active() { return p2Active; }
     public boolean isMultiplayer() { return isMultiplayer; }
