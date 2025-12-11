@@ -2,10 +2,10 @@ package Data;
 
 public abstract class GameCharacter extends GameObject {
     
-    // dx y dy ahora representan dirección (-1, 0, 1), no velocidad en píxeles
+    // dx y dy ahora representan dirección (-1, 0, 1)
     protected int dx, dy;
     
-    // speed ahora representará "cuántos frames espera antes de moverse" (Delay)
+    // moveDelay: "cuántos frames espera antes de moverse"
     // Menor número = Más rápido
     protected int moveDelay; 
 
@@ -14,7 +14,7 @@ public abstract class GameCharacter extends GameObject {
         this.moveDelay = initialDelay;
     }
 
-    // Este método mueve al personaje UN bloque completo en la dirección actual
+    // Mueve al personaje UN bloque completo en la dirección actual
     public void moveGrid() {
         this.x += dx * size;
         this.y += dy * size;
@@ -27,14 +27,30 @@ public abstract class GameCharacter extends GameObject {
 
     public abstract void updateBehavior(); 
 
-    // Setters de dirección (Solo cambian la orientación, no mueven)
-    // Evitamos girar 180 grados sobre sí mismo (ej: si va a la derecha, no puede ir a la izquierda)
-    public void setDirectionUp()    { if(dy != 1) { dx = 0; dy = -1; } }
-    public void setDirectionDown()  { if(dy != -1) { dx = 0; dy = 1; } }
-    public void setDirectionLeft()  { if(dx != 1) { dx = -1; dy = 0; } }
-    public void setDirectionRight() { if(dx != -1) { dx = 1; dy = 0; } }
+    // --- CAMBIO AQUÍ: Eliminamos las restricciones "if" ---
+    // Ahora permite cambiar a cualquier dirección inmediatamente, incluso la opuesta.
 
-    // Aumentar velocidad ahora significa reducir el tiempo de espera
+    public void setDirectionUp() { 
+        dx = 0; 
+        dy = -1; 
+    }
+
+    public void setDirectionDown() { 
+        dx = 0; 
+        dy = 1; 
+    }
+
+    public void setDirectionLeft() { 
+        dx = -1; 
+        dy = 0; 
+    }
+
+    public void setDirectionRight() { 
+        dx = 1; 
+        dy = 0; 
+    }
+
+    // Aumentar velocidad reduciendo el tiempo de espera
     public void increaseSpeed() {
         if (moveDelay > 5) { // Límite para que no sea injugable
             moveDelay--; 
